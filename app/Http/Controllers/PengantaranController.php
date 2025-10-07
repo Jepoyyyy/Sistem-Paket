@@ -16,7 +16,8 @@ class PengantaranController extends Controller
             'unique_number'         => 'required|string|max:255',
             'receiver_name'       => 'required|string|max:255',
             'package_notes'        => 'required|string|max:255',
-            'receiver_phone'         => 'required|string|max:20',
+            'receiver_phone'         => ['required',
+        'regex:/^62[0-9]{7,15}$/'],
             'package_photo'          => 'required|image|mimes:jpg,jpeg,png|max:2048',
             'screenshot'             => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);

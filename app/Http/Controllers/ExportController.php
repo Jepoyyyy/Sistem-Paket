@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 use App\Models\Pengambilan;
 
@@ -25,7 +26,9 @@ class ExportController extends Controller
                 'p2.package_notes',
                 'p1.pickerofficer_name',
                 'p1.picker_name',
-                'p1.picker_phone'
+                'p1.picker_phone',
+                'p2.created_at as pengantaran_at',
+                'p1.created_at as pengambilan_at'
             )
             ->union(
                 DB::table('pengantarans as p2')
@@ -38,7 +41,10 @@ class ExportController extends Controller
                         'p2.package_notes',
                         'p1.pickerofficer_name',
                         'p1.picker_name',
-                        'p1.picker_phone'
+                        'p1.picker_phone',
+                        'p2.created_at as pengantaran_at',
+                        'p1.created_at as pengambilan_at'
+
                     )
             )
             ->get();
@@ -47,27 +53,48 @@ class ExportController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         // Header
-        $sheet->setCellValue('A1', 'Unique Number');
-        $sheet->setCellValue('B1', 'Sender Name');
-        $sheet->setCellValue('C1', 'Receiver Name');
-        $sheet->setCellValue('D1', 'Receiver Phone');
-        $sheet->setCellValue('E1', 'Package Notes');
-        $sheet->setCellValue('F1', 'Picker Officer');
-        $sheet->setCellValue('G1', 'Picker Name');
-        $sheet->setCellValue('H1', 'Picker Phone');
+        $sheet->setCellValue('A1', 'Tanggal Pengantaran');
+$sheet->setCellValue('B1', 'Waktu Pengantaran');
+$sheet->setCellValue('C1', 'Nomor Unik');
+$sheet->setCellValue('D1', 'Pengirim');
+$sheet->setCellValue('E1', 'No. Penerima');
+$sheet->setCellValue('F1', 'Petugas Pengantaran');
+$sheet->setCellValue('G1', 'Catatan Paket');
+$sheet->setCellValue('H1', 'Penerima');
+$sheet->setCellValue('I1', 'Pengambil');
+$sheet->setCellValue('J1', 'No. Pengambil');
+$sheet->setCellValue('K1', 'Tanggal Pengambilan');
+$sheet->setCellValue('L1', 'Waktu Pengambilan');
 
-        // Isi data
-        $row = 2;
-        foreach ($data as $item) {
-            $sheet->setCellValueExplicit('A'.$row, $item->unique_number, DataType::TYPE_STRING);
-            $sheet->setCellValue('B'.$row, $item->sender_name);
-            $sheet->setCellValue('C'.$row, $item->receiver_name);
-            $sheet->setCellValueExplicit('D'.$row, $item->receiver_phone, DataType::TYPE_STRING);
-            $sheet->setCellValue('E'.$row, $item->package_notes);
-            $sheet->setCellValue('F'.$row, $item->pickerofficer_name);
-            $sheet->setCellValue('G'.$row, $item->picker_name);
-            $sheet->setCellValueExplicit('H'.$row, $item->picker_phone, DataType::TYPE_STRING);
-            $row++;
+// Isi data
+$row = 2;
+foreach ($data as $item) {
+    $sheet->setCellValueExplicit('C'.$row, $item->unique_number, DataType::TYPE_STRING);
+    $sheet->setCellValue('D'.$row, $item->sender_name);
+    $sheet->setCellValue('E'.$row, $item->receiver_name);
+    $sheet->setCellValueExplicit('F'.$row, $item->receiver_phone, DataType::TYPE_STRING);
+    $sheet->setCellValue('G'.$row, $item->package_notes);
+    $sheet->setCellValue('H'.$row, $item->pickerofficer_name);
+    $sheet->setCellValue('I'.$row, $item->picker_name);
+    $sheet->setCellValueExplicit('J'.$row, $item->picker_phone, DataType::TYPE_STRING);
+
+    // Format tanggal & waktu (kalau datanya ada)
+    $pengantaranAt = $item->pengantaran_at ?? null;
+    $pengambilanAt = $item->pengambilan_at ?? null; // kamu perlu alias di query kalau ada 2 created_at
+
+    if ($pengantaranAt) {
+        $date = Carbon::parse($pengantaranAt);
+        $sheet->setCellValue('A'.$row, $date->format('Y-m-d')); // tanggal
+        $sheet->setCellValue('B'.$row, $date->format('H:i:s')); // waktu
+    }
+
+    if ($pengambilanAt) {
+        $date2 = Carbon::parse($pengambilanAt);
+        $sheet->setCellValue('K'.$row, $date2->format('Y-m-d'));
+        $sheet->setCellValue('L'.$row, $date2->format('H:i:s'));
+    }
+
+    $row++;
         }
 
         $writer = new Xlsx($spreadsheet);
@@ -94,7 +121,7 @@ class ExportController extends Controller
         )
         ->get();
 
-    $pdf = Pdf::loadView('exports.pdf', compact('pakets'))  
+    $pdf = Pdf::loadView('exports.pdf', compact('pakets'))
             ->setPaper('a4', 'landscape');
 
     return $pdf->download('data-pengiriman.pdf');

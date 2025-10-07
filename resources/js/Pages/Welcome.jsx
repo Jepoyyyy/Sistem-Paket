@@ -14,13 +14,17 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
 
     return (
         <>
-            <Head title="Welcome" />
-            <div className="bg-gray-50 text-black/50 m-6">
-            <nav className="-mx-3 flex flex-1 justify-end">
+            <Head title="Form" />
+            <div className="bg-gray-50 text-black/50 ">
+            <div className='m-6'>
+
+
+
+            <nav className="px-3 flex flex-1 justify-end">
                                 {auth.user ? (
                                     <Link
-                                        href={route('dashboard')}
-                                        className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                    href={route('dashboard')}
+                                    className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
                                     >
                                         Dashboard
                                     </Link>
@@ -29,20 +33,21 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                         <Link
                                             href={route('login')}
                                             className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                        >
+                                            >
                                             Log in
                                         </Link>
                                         <Link
                                             href={route('register')}
                                             className="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                                        >
+                                            >
                                             Register
                                         </Link>
                                     </>
                                 )}
                             </nav>
+
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-400 text-white p-4 rounded-lg mb-4 flex items-center gap-3">
+      <div className="bg-gradient-to-r from-blue-600 to-cyan-400 text-white p-4 rounded-lg mb-4 mt-4 flex items-center gap-3">
         <div className="bg-white rounded-full p-1 flex items-center justify-center shadow w-12 h-12">
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/1/11/BPKP_Logo.png"
@@ -67,24 +72,18 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
         </button>
 
         {dropdownOpen && (
-          <div className="absolute left-0 right-0 mt-1 bg-white rounded-lg shadow divide-y divide-gray-200">
+          <div className="absolute left-0 right-0 mt-1 bg-white rounded-lg shadow divide-y divide-gray-200 ">
             <div
               onClick={() => { setSelectedForm('delivery'); setDropdownOpen(false); }}
-              className="dropdown-item px-4 py-3 text-center cursor-pointer hover:bg-gray-100"
+              className="dropdown-item px-4 py-3 text-center text-black cursor-pointer rounded-lg hover:bg-slate-300"
             >
               🚚 PENGANTARAN PAKET
             </div>
             <div
               onClick={() => { setSelectedForm('pickup'); setDropdownOpen(false); }}
-              className="dropdown-item px-4 py-3 text-center cursor-pointer hover:bg-gray-100"
+              className="dropdown-item px-4 py-3 text-center cursor-pointer text-black rounded-lg hover:bg-slate-300"
             >
               📤 PENGAMBILAN PAKET
-            </div>
-            <div
-              onClick={() => { setSelectedForm(null); setDropdownOpen(false); }}
-              className="dropdown-item px-4 py-3 text-center cursor-pointer hover:bg-gray-100"
-            >
-              📊 DASHBOARD
             </div>
           </div>
         )}
@@ -95,7 +94,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
       {selectedForm === 'pickup' && <PickingForm />}
 
 
-
+            </div>
             </div>
         </>
     );

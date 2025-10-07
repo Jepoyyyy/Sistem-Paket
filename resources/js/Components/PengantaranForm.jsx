@@ -1,13 +1,15 @@
 import { useState,useRef } from 'react';
 import Webcam from "react-webcam";
 import axios from "axios";
+import { faArrowsRotate,faCheck } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const DeliveryForm = () => {
     const [preview, setPreview] = useState(null);
     const [showLabel, setShowLabel] = useState(false);
     const webcamRef = useRef(null);
 
-
+    const [facingMode, setFacingMode] = useState("user");
     const [senderName, setSenderName] = useState("");
     const [senderOfficerName, setSenderOfficerName] = useState("");
     const [receiverName, setReceiverName] = useState("");
@@ -21,7 +23,7 @@ const DeliveryForm = () => {
     const videoConstraints = {
         width: 300,
         height: 400,
-
+        facingMode: facingMode,
         };
 
 
@@ -88,6 +90,18 @@ const DeliveryForm = () => {
       });
       console.log("Sukses:", response.data);
       setSavedPaket(response.data.data);
+      setSenderName("");
+      setPreview(null);
+      setSenderOfficerName("");
+      setpackageNotes("");
+      setscreenShot(null);
+      setReceiverName("");
+      setReceiverPhone("");
+      setCameraOn(false);
+      setpackagePhoto(null);
+      setUniqueNumber("");
+      setShowLabel(false);
+
 
         }
     catch (error) {
@@ -187,7 +201,7 @@ const DeliveryForm = () => {
 
 
     return(
-        <div className="bg-white rounded-lg p-4 mb-4 shadow">
+        <div className="bg-white shadow   ">
                   <div className="bg-blue-600 text-white font-bold text-sm text-center rounded-t-lg px-3 py-2 mb-3">
                     🚚 PENGANTARAN PAKET
                   </div>
@@ -237,13 +251,28 @@ const DeliveryForm = () => {
                       <label htmlFor="receiverphonelab" className="block text-gray-700 text-sm font-medium mb-1">
                         No. Whatsapp
                       </label>
+
+
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         id="receiverPhone"
                         name='receiver_phone'
                         placeholder="Contoh: 628123456789"
                         value={receiverPhone}
                         onChange={(e) => setReceiverPhone(e.target.value)}
+                        onKeyDown={(e) => {
+                        if (!/[0-9]/.test(e.key) && e.key !== "Backspace" && e.key !== "Delete") {
+                         e.preventDefault();
+                            }
+                        if (
+                        e.currentTarget.value.length >= 17 &&
+                        e.key !== "Backspace" &&
+                        e.key !== "Delete"
+                        ) {
+                        e.preventDefault();
+                        }
+                        }}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       />
                       <p className="text-xs text-gray-500 mt-1">No Whatsapp diawali oleh kode negara (62)</p>
@@ -272,66 +301,76 @@ const DeliveryForm = () => {
 
         </div>
 
-            <div className="mb-3">
-            <label
-            htmlFor="packagePhoto"
-            className="block text-gray-700 text-sm font-medium mb-1"
-          >
-            Foto Paket
-          </label>
-              {!cameraOn ? (
-                <button
-                type='button'
+<div className="mb-3">
+  <label className="block text-gray-700 text-sm font-medium mb-1">
+    Foto Paket
+  </label>
 
-                  onClick={startCamera}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-                >
-                  📷 Aktifkan Kamera
-                </button>
-              ) : (
+  <div className="flex flex-col sm:flex-row gap-4 my-4">
+    {/* Webcam muncul hanya jika kamera hidup dan belum ada preview */}
+    {cameraOn && !preview && (
+  <div className="relative w-1/2">
+    <Webcam
+      audio={false}
+      ref={webcamRef}
+      screenshotFormat="image/jpeg"
+      videoConstraints={videoConstraints}
+      className="rounded-md w-full"
+    />
 
-                <div>
-                    <div className='flex flex-col sm:flex-row '>
-                  <Webcam
-                    audio={false}
-                    height={400}
-                    ref={webcamRef}
-                    screenshotFormat="image/jpeg"
-                    width={300}
-                    videoConstraints={videoConstraints}
-                    className="rounded-md border w-1/2"
-                  />
-                  {/* Preview hasil foto */}
-              {preview && (
-                <div className="w-1/2">
-                  <h3 className="text-sm font-semibold mb-2">Preview Foto:</h3>
-                  <img src={preview} alt="Preview" className="rounded-md border" />
-                </div>
-              )}
-              </div>
+    {/* Tombol kecil rotate */}
+    <button
+      type="button"
+      onClick={() =>
+        setFacingMode((prev) => (prev === "user" ? "environment" : "user"))
+      }
+      className="absolute top-2 right-2 bg-black/60 text-white p-2 rounded-full hover:bg-black/80"
+    >
+      <FontAwesomeIcon icon={faArrowsRotate} />
+    </button>
+  </div>
+)}
 
-                  <div className="flex justify-between">
-                    <button
-                      onClick={capturePhoto}
-                      type='button'
-                      className="w-1/2 mr-2 bg-green-600 text-white font-semibold py-2 rounded-md mt-2 hover:bg-green-700"
-                    >
-                      📸 Ambil Foto
-                    </button>
-                    <button
-                    type='button'
-                      onClick={()=>setCameraOn(false)}
-                      className="w-1/2 ml-2 bg-gray-100 text-black border border-gray-400 font-semibold py-2 rounded-md mt-2 hover:border-blue-700"
-                    >
-                      Reset
-                    </button>
-                  </div>
-                </div>
-              )}
+    {/* Preview selalu muncul jika ada */}
+    {preview && (
+      <div className="w-1/2 ">
+        <h3 className="text-sm font-semibold mb-2">Preview Foto:</h3>
+        <img src={preview} alt="Preview" className="rounded-md  w-full " />
+      </div>
+    )}
+  </div>
 
+  <div className="flex justify-between  gap-2">
+    {/* Tombol toggle / ambil ulang */}
+    <button
+      type='button'
+      onClick={() => {
+        if (preview) {
+          // Ambil ulang foto → reset preview dan hidupkan kamera
+          setPreview(null);
+          setCameraOn(true);
+        } else {
+          // Kamera mati → hidupkan
+          setCameraOn(!cameraOn);
+        }
+      }}
+      className="w-1/2 bg-blue-600 py-2  text-white rounded-lg"
+    >
+      {preview ? '📷 Reset Foto' : (cameraOn ? '📷 Matikan Kamera' : '📷 Aktifkan Kamera')}
+    </button>
 
-            </div>
-
+    {/* Tombol Ambil Foto hanya muncul jika belum ada preview */}
+    {!preview && (
+      <button
+        onClick={capturePhoto}
+        type='button'
+        className="w-1/2 bg-green-600 text-white font-semibold py-2 rounded-md hover:bg-green-700"
+      >
+        📸 Ambil Foto
+      </button>
+    )}
+  </div>
+</div>
                     <button
                       type="button"
                       onClick={generateNumber}
@@ -341,11 +380,11 @@ const DeliveryForm = () => {
                     </button>
              {showLabel && (
                 <div className="special-label-container p-4 border rounded-md shadow bg-white mt-4">
-                  <div className="special-label font-bold text-green-600 text-lg mb-2">
-                    ✅ PAKET TELAH DIANTAR - BPKP OFFICIAL{" "}
+                  <div className="special-label font-bold text-green-600 text-lg mb-2 border border-green-600 rounded p-4">
+                    <FontAwesomeIcon icon={faCheck} />
+                    PAKET TELAH DIANTAR - BPKP OFFICIAL{" "}
                   <span className="unique-number ml-2">{uniqueNumber}</span>
                   </div>
-
                   <p className="screenshot-instruction text-sm">
                     Silakan screenshot label di atas sebagai bukti pengantaran
                   </p>
@@ -361,42 +400,6 @@ const DeliveryForm = () => {
                   onChange={(e) => setscreenShot(e.target.files[0])}
                 />
               </div>
-
-                  {/* WhatsApp Section */}
-                  <div className="whatsapp-section mt-4">
-                    <p className="whatsapp-info text-sm mb-2">
-                      <i className="fab fa-whatsapp"></i> Special Label akan dikirim ke
-                      WhatsApp penerima
-                    </p>
-                    <button
-  type="button"
-  className="submit-btn send-whatsapp bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
-  onClick={() => {
-    const phone = receiverPhone?.trim();
-    if (!phone) {
-      alert("Nomor WhatsApp belum diisi");
-      return;
-    }
-
-    const message = `
-Halo ${receiverName || "-"},
-Paket anda dengan nomor unik ${uniqueNumber} siap diantar.
-
-Catatan: ${packageNotes || "-"}
-    `;
-
-    // Buka WhatsApp langsung
-    window.open(
-      `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
-      "_blank"
-    );
-  }}
->
-  📱 Kirim via WhatsApp
-</button>
-                  </div>
-
-
                   <div>
                   <button
                     type="button"
@@ -411,7 +414,7 @@ Catatan: ${packageNotes || "-"}
     <div className="bg-white p-6 rounded shadow-lg w-96">
       <div>
       <h2 className="text-lg font-bold mb-4">Pesan Berhasil dikirim</h2>
-      
+
       </div>
 
       <p>
@@ -422,7 +425,7 @@ Catatan: ${packageNotes || "-"}
       <div className="mt-4 flex gap-2 justify-end">
         <a
           href={`https://wa.me/${SavedPaket.receiver_phone}?text=${encodeURIComponent(
-            `Halo ${SavedPaket.receiver_name}, paket dengan nomor unik ${SavedPaket.unique_number} sudah diterima.`
+            `Halo ${SavedPaket.receiver_name}, paket dengan nomor unik ${SavedPaket.unique_number} sudah Diantar.`
           )}`}
           target="_blank"
           rel="noopener noreferrer"

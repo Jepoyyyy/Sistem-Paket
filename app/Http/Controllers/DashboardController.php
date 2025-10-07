@@ -7,6 +7,7 @@ use App\Models\pengambilan;
 use App\Models\pengantaran;
 use Carbon\Carbon;
 
+
 class DashboardController extends Controller
 {
     public function Count()
@@ -24,12 +25,24 @@ class DashboardController extends Controller
         ]);
     }
 
-    
-    public function index()
-{
-    $pakets = Pengantaran::with('pengambilan')->get();
 
-    // Tambahkan status tiap paket
+    public function index(Request $request)
+{
+    $search = $request->input('search');
+    $sortBy = $request->input('sort_by', 'created_at'); // default
+    $sortOrder = $request->input('sort_order', 'desc'); // default
+
+    $pakets = Pengantaran::with('pengambilan')
+        ->when($search, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('sender_name', 'like', "%{$search}%")
+                  ->orWhere('receiver_name', 'like', "%{$search}%");
+            });
+        })
+         ->orderBy($sortBy, $sortOrder)
+        ->paginate(5);
+;
+
     $pakets->transform(function($paket) {
         $paket->status = $paket->pengambilan ? 'Sudah Diambil' : 'Belum Diambil';
         return $paket;
@@ -37,5 +50,6 @@ class DashboardController extends Controller
 
     return response()->json($pakets);
 }
+
 
 }
